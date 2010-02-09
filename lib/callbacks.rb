@@ -6,9 +6,10 @@ module Callbacks
   end
 
   def callback(method, type, *args)
-    return true unless self.class.callbacks[method][type]
-
-    self.class.callbacks[method][type].map do |m|
+    callbacks = self.class.callbacks[method][type]
+    return true if callbacks.nil? or callbacks.empty?
+    
+    callbacks.map do |m|
       if args.empty?
         m.is_a?(Proc) ? m.call(self) : send(m)
       else
@@ -52,28 +53,27 @@ module Callbacks
           end
         end_eval
 
-        chain(method.to_sym, type) unless method_defined? :"chained_#{method}"
+        chain method.to_sym unless method_defined? :"chained_#{method}"
       end
     end
 
     alias :define_callback :define_callbacks
     
-    def chain(method, type)
-      before, after = case type
-                      when /before|after/: %w(before after)
-                      when /outgoing/:     %w(outgoing)
-                      # special case, incoming callbacks operate on received data
-                      when /incoming/: [nil, "incoming"]
-                      end
+    def chain(method)
+      before_types, after_types  = [%w(before outgoing), %w(after incoming)]
 
       class_eval <<-end_eval
         alias :"chained_#{method}" :"#{method}"
         def #{method}(*args)
-          before = callback "#{method}", "#{before}", *args
+          before = %w(before outgoing).map do |b| 
+            callback "#{method}", b, *args
+          end.flatten
 
           unless before.include? nil or before.include? false
             returning(args.empty? ? chained_#{method} : chained_#{method}(*args)) do 
-              callback "#{method}", "#{after}", *args
+              %w(after incoming).map do |a| 
+                callback "#{method}", a, *args
+              end.flatten
             end
           end
         end

@@ -73,7 +73,9 @@ class CallbackTest < Test::Unit::TestCase
 
         should "call the entire some_method callback chain" do
           @extant.expects(:callback).with("some_method", "before").returns([true, true])
+          @extant.expects(:callback).with("some_method", "outgoing").returns(true)
           @extant.expects(:callback).with("some_method", "after").returns([true, true])
+          @extant.expects(:callback).with("some_method", "incoming").returns(true)
           @extant.some_method
         end
 
@@ -120,6 +122,7 @@ class CallbackTest < Test::Unit::TestCase
         should "not call the chained_method, or the after callbacks" do
           @this_extant = YA2ExtantClass.new
           @this_extant.expects(:callback).with("some_method", "before").returns([false])
+          @this_extant.expects(:callback).with("some_method", "outgoing").returns([false])
           @this_extant.expects(:callback).with("some_method", "after").never
           @this_extent.expects(:chained_some_method).never
           @this_extant.some_method
@@ -259,7 +262,7 @@ class CallbackTest < Test::Unit::TestCase
         def foo
           :bar
         end
-        chain(:foo, "before")
+        chain :foo
       end
 
       assert_not_equal A.new.foo, B.new.foo
