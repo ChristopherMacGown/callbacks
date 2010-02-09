@@ -189,6 +189,7 @@ class CallbackTest < Test::Unit::TestCase
 
         define_callbacks :before_foo, :after_foo
       end
+
       class AChild < AParent
         before_foo { true }
         after_foo { p "BLAH"} 
@@ -215,12 +216,6 @@ class CallbackTest < Test::Unit::TestCase
           assert_equal :foo, AChild.new.foo
           assert_equal :foo, AnotherChild.new.foo
         end
-
-        should "call before_foo as well as any proc callbacks in the chain" do
-          @another_child = AnotherChild.new
-          @another_child.expects(:send).with(:before_foo).returns(@another_child.before_foo)
-          @another_child.callback("foo", "before")
-        end
       end
     end
   end
@@ -239,6 +234,38 @@ class CallbackTest < Test::Unit::TestCase
       end
 
       IncomingCallback.new.foo
+    end
+  end
+
+  context "a test" do
+    should "call before_foo as well as any proc callbacks in the chain" do
+      class AParent2
+        include Callbacks
+
+        def foo
+          :foo
+        end
+
+        def callbacks
+          self.class.callbacks
+        end
+
+        define_callbacks :before_foo, :after_foo
+      end
+
+      class AnotherChild2 < AParent2
+        def before_foo
+          :before_foo
+        end
+
+        def after_foo
+          :after_foo
+        end
+      end
+      anotherchild = AnotherChild2.new
+      anotherchild.expects(:before_foo).returns("HI")                                                  
+      anotherchild.expects(:after_foo).returns("BYE")                                                  
+      anotherchild.foo 
     end
   end
 end
