@@ -237,6 +237,35 @@ class CallbackTest < Test::Unit::TestCase
     end
   end
 
+  context "A parent with a subclass that redefines the callbacked method" do 
+    should "rechain" do
+      class A 
+        include Callbacks
+
+        def foo
+          :foo
+        end
+
+        define_callback :before_foo
+      end
+
+      # Hack to define B
+      class B < A; end 
+      B.expects(:chain)
+
+      class B < A
+        before_foo { true }
+
+        def foo
+          :bar
+        end
+        chain(:foo, "before")
+      end
+
+      assert_not_equal A.new.foo, B.new.foo
+    end
+  end
+
   context "a test" do
     should "call before_foo as well as any proc callbacks in the chain" do
       class AParent2
@@ -262,9 +291,10 @@ class CallbackTest < Test::Unit::TestCase
           :after_foo
         end
       end
+
       anotherchild = AnotherChild2.new
-      anotherchild.expects(:before_foo).returns("HI")                                                  
-      anotherchild.expects(:after_foo).returns("BYE")                                                  
+      anotherchild.expects(:before_foo).returns("HI")
+      anotherchild.expects(:after_foo).returns("BYE")
       anotherchild.foo 
     end
   end
