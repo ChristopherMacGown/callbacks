@@ -14,7 +14,7 @@ namespace :test do
   task :coverage do
     rm_f "coverage"
     rm_f "coverage.data"
-    rcov = "rcov --rails --exclude Libary --aggregate coverage.data --text-summary -Ilib"
+    rcov = "rcov --rails --exclude Library --aggregate coverage.data --text-summary -Ilib"
     system("#{rcov} --no-html test/unit/*_test.rb")
     system("open coverage/index.html") if PLATFORM['darwin']
   end
