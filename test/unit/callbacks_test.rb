@@ -218,7 +218,7 @@ class CallbackTest < Test::Unit::TestCase
 
         should "call before_foo as well as any proc callbacks in the chain" do
           @another_child = AnotherChild.new
-          @another_child.expects(:send)
+          @another_child.expects(:send).with(:before_foo).returns(@another_child.before_foo)
           @another_child.callback("foo", "before")
         end
       end
