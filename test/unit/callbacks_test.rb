@@ -224,5 +224,21 @@ class CallbackTest < Test::Unit::TestCase
       end
     end
   end
-end
 
+  context "A class with an incoming callback" do
+    should "not raise with the class definition" do
+      class IncomingCallback
+        include Callbacks
+
+        def foo
+          :bar
+        end
+
+        define_callback :incoming_foo
+        incoming_foo { :bar }
+      end
+
+      IncomingCallback.new.foo
+    end
+  end
+end

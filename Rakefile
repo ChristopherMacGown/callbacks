@@ -15,7 +15,7 @@ namespace :test do
     rm_f "coverage"
     rm_f "coverage.data"
     rcov = "rcov --rails --exclude Library --aggregate coverage.data --text-summary -Ilib"
-    system("#{rcov} --no-html test/unit/*_test.rb")
+    system("#{rcov} test/unit/*_test.rb")
     system("open coverage/index.html") if PLATFORM['darwin']
   end
 end

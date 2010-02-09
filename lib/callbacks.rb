@@ -62,7 +62,6 @@ module Callbacks
       before, after = case type
                       when /before|after/: %w(before after)
                       when /outgoing/:     %w(outgoing)
-
                       # special case, incoming callbacks operate on received data
                       when /incoming/: [nil, "incoming"]
                       end
@@ -91,7 +90,6 @@ module Callbacks
           h[key] = case value
                    when Hash: deep_clone.call(value)
                    when Array: value.clone
-                   else value
                    end
           h
         end
