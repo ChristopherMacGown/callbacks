@@ -93,10 +93,12 @@ module Callbacks
           end.flatten
 
           unless before.include? nil or before.include? false
-            returning(args.empty? ? chained_#{method} : chained_#{method}(*args)) do 
-              %w(after incoming).map do |a| 
-                callback "#{method}", a, *args
-              end.flatten
+            returning(args.empty? ? chained_#{method} : chained_#{method}(*args)) do |ret|
+              if ret
+                %w(after incoming).map do |a| 
+                  callback "#{method}", a, *args
+                end.flatten
+              end
             end
           end
         end
