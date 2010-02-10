@@ -8,11 +8,12 @@ License:: MIT License
 
 == Installation
 
-  Copy lib/callbacks.rb into your application and require it.
+  gem build callbacks.gemspec
+  gem install callbacks-*
 
 == Usage
 
-  require 'callbacks.rb'
+  require 'callbacks'
 
   class SomeClass
     include Callbacks
@@ -28,3 +29,4 @@ License:: MIT License
   SomeClass.new.some_method
   => returns what some_method returns if before_some_method doesn't return nil or false
 
+  Additionally, see the examples/
