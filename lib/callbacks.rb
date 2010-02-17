@@ -18,12 +18,7 @@ module Callbacks
     return true if callbacks.nil? or callbacks.empty?
 
     callbacks.map do |m|
-      # No easy way to DRY this.
-      if args.empty?
-        m.is_a?(Proc) ? m.call(self) : send(m)
-      else
-        m.is_a?(Proc) ? m.call(self, *args) : send(m, *args)
-      end
+      m.is_a?(Proc) ? m.call(self, *args) : send(m, *args)
     end
   end
 
@@ -45,7 +40,6 @@ module Callbacks
       build_callback :after, method, *callback_methods, &block
     end
 
-    protected
 
     # Creates a generic callback
     #
