@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = 'callbacks'
-  s.version = '0.1'
+  s.version = '0.2'
   s.summary = 'Arbitrary callbacks on instance methods'
   s.description = 'Module that allows you to define and chain an unlimited number of semi-arbitrary callbacks on instance methods.'
   s.files = ['lib/callbacks.rb']

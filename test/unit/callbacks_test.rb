@@ -2,30 +2,20 @@ require File.join(File.dirname(__FILE__), '../test_helper.rb')
 
 class CallbackTest < Test::Unit::TestCase
   context "A Class" do
-    should "raise for an invalid callback type" do
-      exception = assert_raises Callbacks::CallbackError do
-        class FailClass
-          include Callbacks
-
-          define_callback :pants_some_method
-        end
-      end
-
-      assert_equal "Invalid Callback Type", exception.message
-    end
-
     should "raise for a callback on a non-existent method" do
       exception = assert_raises Callbacks::CallbackError do
         class FailClass
           include Callbacks
 
-          define_callback :before_some_method
+          before :some_method do |me, args|
+            # stuff
+          end
         end
       end
       assert_equal "No such method", exception.message
     end
 
-    should "not raise when defining available callback chains on existent methods" do
+    should "not raise when creating a callback with a block" do
       assert_nothing_raised do 
         class ExtantClass 
           include Callbacks
@@ -34,27 +24,14 @@ class CallbackTest < Test::Unit::TestCase
             :some_method
           end
 
-          define_callback :before_some_method
+          before :some_method do 
+            # stuff
+          end
         end
       end
     end
 
     context "A class with valid method names and callbacks" do
-      should "not raise when creating a callback with a block" do
-        assert_nothing_raised do
-          class SomeExtantClass
-            include Callbacks
-
-            def some_method
-              :some_method
-            end
-
-            define_callback :before_some_method
-            before_some_method { true }
-          end
-        end
-      end
-
       context "When the callback backed method is called" do 
         setup do
           class ExtantClass
@@ -64,18 +41,18 @@ class CallbackTest < Test::Unit::TestCase
               :some_method
             end
 
-            define_callback :before_some_method
-            before_some_method { true }
+            before :some_method do
+              #stuff
+              true
+            end
           end
 
           @extant = ExtantClass.new
         end
 
         should "call the entire some_method callback chain" do
-          @extant.expects(:callback).with("some_method", "before").returns([true, true])
-          @extant.expects(:callback).with("some_method", "outgoing").returns(true)
-          @extant.expects(:callback).with("some_method", "after").returns([true, true])
-          @extant.expects(:callback).with("some_method", "incoming").returns(true)
+          @extant.expects(:callback).with(:some_method, :before).returns([true])
+          @extant.expects(:callback).with(:some_method, :after).returns([true])
           @extant.some_method
         end
 
@@ -95,8 +72,10 @@ class CallbackTest < Test::Unit::TestCase
               :some_method
             end
 
-            define_callback :before_some_method
-            before_some_method { false }
+            before :some_method do 
+              #stuff
+              false
+            end
           end
         end
 
@@ -114,18 +93,18 @@ class CallbackTest < Test::Unit::TestCase
               :some_method
             end
 
-            define_callback :before_some_method
-            before_some_method { false }
+            before :some_method do 
+              #stuff
+              false
+            end
           end
         end
 
         should "not call the chained_method, or the after callbacks" do
-          @this_extant = YA2ExtantClass.new
-          @this_extant.expects(:callback).with("some_method", "before").returns([false])
-          @this_extant.expects(:callback).with("some_method", "outgoing").returns([false])
-          @this_extant.expects(:callback).with("some_method", "after").never
-          @this_extent.expects(:chained_some_method).never
-          @this_extant.some_method
+          @extant = YA2ExtantClass.new
+          @extant.expects(:callback).with(:some_method, :before).returns([false])
+          @extant.expects(:callback).with(:some_method, :after).never
+          @extant.some_method
         end
       end
     end
@@ -139,8 +118,9 @@ class CallbackTest < Test::Unit::TestCase
         a + b + c
       end
 
-      define_callback :before_foo
-      before_foo { |method, i,j,k| i * j * k }
+      before :foo do |object, i, j, k|
+        i * j * k
+      end
     end
 
     should "return the sum of the three arguments" do
@@ -161,9 +141,15 @@ class CallbackTest < Test::Unit::TestCase
           self.class.callbacks
         end
 
-        define_callbacks :before_foo, :after_foo
-        before_foo { true }
-        after_foo { :do_something }
+        before :foo do 
+          #stuff
+
+          true
+        end
+
+        after :foo do
+          :something
+        end
       end
 
       class SomeChild < SomeParent; end
@@ -189,23 +175,24 @@ class CallbackTest < Test::Unit::TestCase
         def callbacks
           self.class.callbacks
         end
-
-        define_callbacks :before_foo, :after_foo
       end
 
       class AChild < AParent
-        before_foo { true }
-        after_foo { p "BLAH"} 
+        before :foo do
+          :something_else
+        end
+
+        after :foo do
+          :yet_something_else
+        end
       end
 
       class AnotherChild < AParent
-        def before_foo
-          :before_foo
+        def bar
+          :baz
         end
 
-        def after_foo
-          :after_foo
-        end
+        before :foo, :bar
       end
     end
 
@@ -223,23 +210,6 @@ class CallbackTest < Test::Unit::TestCase
     end
   end
 
-  context "A class with an incoming callback" do
-    should "not raise with the class definition" do
-      class IncomingCallback
-        include Callbacks
-
-        def foo
-          :bar
-        end
-
-        define_callback :incoming_foo
-        incoming_foo { :bar }
-      end
-
-      IncomingCallback.new.foo
-    end
-  end
-
   context "A parent with a subclass that redefines the callbacked method" do 
     should "rechain" do
       class A 
@@ -249,7 +219,9 @@ class CallbackTest < Test::Unit::TestCase
           :foo
         end
 
-        define_callback :before_foo
+        before :foo do 
+          :before_foo
+        end
       end
 
       # Hack to define B
@@ -257,8 +229,6 @@ class CallbackTest < Test::Unit::TestCase
       B.expects(:chain)
 
       class B < A
-        before_foo { true }
-
         def foo
           :bar
         end
@@ -266,39 +236,6 @@ class CallbackTest < Test::Unit::TestCase
       end
 
       assert_not_equal A.new.foo, B.new.foo
-    end
-  end
-
-  context "a test" do
-    should "call before_foo as well as any proc callbacks in the chain" do
-      class AParent2
-        include Callbacks
-
-        def foo
-          :foo
-        end
-
-        def callbacks
-          self.class.callbacks
-        end
-
-        define_callbacks :before_foo, :after_foo
-      end
-
-      class AnotherChild2 < AParent2
-        def before_foo
-          :before_foo
-        end
-
-        def after_foo
-          :after_foo
-        end
-      end
-
-      anotherchild = AnotherChild2.new
-      anotherchild.expects(:before_foo).returns("HI")
-      anotherchild.expects(:after_foo).returns("BYE")
-      anotherchild.foo 
     end
   end
 end

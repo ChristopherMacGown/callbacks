@@ -11,11 +11,12 @@ module Callbacks
     base.extend ClassMethods
   end
 
+  private
   # Execute callbacks on a callback chain
   def callback(method, type, *args)
     callbacks = self.class.callbacks[method][type]
     return true if callbacks.nil? or callbacks.empty?
-    
+
     callbacks.map do |m|
       # No easy way to DRY this.
       if args.empty?
@@ -35,70 +36,65 @@ module Callbacks
   module ClassMethods
     CALLBACK_TYPES = %w(before after outgoing incoming)
 
-    # Define the callbacks, will raise CallbackError if the method doesn't exist
-    # or the callback type is invalid
-    # 
-    # syntax:
-    #  * before_somemethod
-    #  * after_somemethod
-    #  * outgoing_somemethod
-    #  * incoming_somemethod
-    #                  
-    def define_callbacks(*callbacks)
-      callbacks.each do |callback|
-        callback.to_s =~ /(#{CALLBACK_TYPES.join("|")})_(.*?)/
-        type, method = [$1, $']
-
-        raise CallbackError, "Invalid Callback Type" unless CALLBACK_TYPES.include? type
-        raise CallbackError, "No such method" unless method_defined? method.to_sym
-
-        self.callbacks[method] ||= Hash.new([])
-
-        # Setting a default automatically means ||= short-circuits and all callbacks
-        # end up added to the default array instead. Makes for an interesting bug.
-        self.callbacks[method][type] = [] if self.callbacks[method][type].empty?
-        self.callbacks[method][type] << callback.to_sym
-
-        class_eval <<-end_eval
-
-          # implicitly define the default callback for the chain
-          def #{callback}(*args)
-            true
-          end
-
-          # Add a callback to the chain
-          def self.#{callback}(*methods, &block)
-            (methods << block).compact.each do |m|
-              callbacks["#{method}"]["#{type}"] << m
-            end
-          end
-        end_eval
-
-        chain method.to_sym unless method_defined? :"chained_#{method}"
-      end
+    def before(method, *callback_methods, &block)
+      build_callback :before, method, *callback_methods, &block
     end
 
-    alias :define_callback :define_callbacks
-    
-    # Create the callback chain
+    def after(method, *callback_methods, &block)
+      build_callback :after, method, *callback_methods, &block
+    end
+
+    def build_callback(type, method, *callback_methods, &block)
+      raise CallbackError, "No such method" unless method_defined? method.to_sym
+      raise CallbackError, "Cannot specify block and method callbacks together" unless callback_methods.empty? or block.nil?
+
+      self.callbacks[method] ||= Hash.new([])
+
+      # Setting a default automatically means ||= short-circuits and all callbacks
+      # end up added to the default array instead. Makes for an interesting bug.
+      self.callbacks[method][type] = [] if self.callbacks[method][type].empty?
+
+      (callback_methods << block).compact.each do |m|
+        callbacks[method][type] << m
+      end
+
+      chain method.to_sym unless method_defined? :"chained_#{method}"
+    end
+
+    # Builds a chained method so the callbacks will fire.
+    # This method must be called after a method chained in a parent class is
+    # redefined in a subclass the callbacks should fire on the redefined
+    # method
     def chain(method)
       before_types, after_types  = [%w(before outgoing), %w(after incoming)]
 
+      # alias :chained_some_method :some_method
+      #
+      # def some_method(*args)
+      #   before = %w(before outgoing).map do |b| 
+      #      callback "some_method", b, *args
+      #   end.flatten
+      #
+      #   unless before.include? nil or before.include? false
+      #     returning(args.empty? ? chained_some_method : chained_some_method(*args)) do |ret|
+      #       if ret
+      #         %w(after incoming).map do |a|
+      #           callback "some_method", a, *args
+      #         end
+      #       end
+      #     end
+      #   end
+      # end
+      #           
       class_eval <<-end_eval
         alias :"chained_#{method}" :"#{method}"
 
         def #{method}(*args)
-          before = %w(before outgoing).map do |b| 
-            callback "#{method}", b, *args
-          end.flatten
+          before = callback "#{method}".to_sym, :before, *args
 
           unless before.include? nil or before.include? false
             returning(args.empty? ? chained_#{method} : chained_#{method}(*args)) do |ret|
-              if ret
-                %w(after incoming).map do |a| 
-                  callback "#{method}", a, *args
-                end.flatten
-              end
+              callback "#{method}".to_sym, :after, *args if ret
             end
           end
         end
@@ -124,7 +120,7 @@ module Callbacks
 
       @@callbacks ||= {}
       # inner callback Array is the same, Hash needs a deep clone
-      @@callbacks[self] ||= (parent ? deep_clone.call(@@callbacks[parent]) : {})
+      @@callbacks[self] ||= (@@callbacks[parent] ? deep_clone.call(@@callbacks[parent]) : {})
       @@callbacks[self]
     end
   end

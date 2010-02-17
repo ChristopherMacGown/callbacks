@@ -15,48 +15,33 @@ class AGenericParent
     # it defines lambda or method callbacks.
     self.class.callbacks
   end
-
-  define_callbacks :before_some_method, :after_some_method
 end
 
-class AChildWithLambdaCallbacks < AGenericParent
-  before_some_method do
+class AChildWithBlockCallbacks < AGenericParent
+  before :some_method do
     p self.to_s + " inside before_some_method lambda"
     true 
   end
 
-  after_some_method do
+  after :some_method do
     p self.to_s + " inside after_some_method lambda"
     true 
   end
 end
 
-class AChildWithImplicitlyDefinedMethodCallbacks < AGenericParent
+class AChildWithMethodCallbacks < AGenericParent
   def before_some_method
-    p self.class.to_s + " inside :before_some_method method"
-    true 
-  end
-
-  def after_some_method
-    p self.class.to_s + " inside :after_some_method method"
-    true 
-  end
-end
-
-class AChildWithExplicitlyDefinedMethodCallbacks < AGenericParent
-  def explicit_before
     p self.class.to_s + " inside :explicit_before"
     true 
   end
 
-  def explicit_after
+  def after_some_method
     p self.class.to_s + " inside :explicit_after"
     true 
   end
 
-
-  before_some_method :explicit_before
-  after_some_method :explicit_after
+  before :some_method, :after_some_method
+  after :some_method, :before_some_method
 end
 
 class AChildRedefinesChainedMethod < AGenericParent
@@ -66,12 +51,12 @@ class AChildRedefinesChainedMethod < AGenericParent
   end
   chain :some_method
 
-  def before_some_method
+  before :some_method do
     p "Callbacks still execute"
     :before_some_method
   end
 
-  def after_some_method
+  after :some_method do 
     p "Before and After"
     :after_some_method
   end
@@ -81,17 +66,13 @@ p AGenericParent
 p AGenericParent.new.some_method
 p AGenericParent.callbacks
 puts "---"
-p AChildWithLambdaCallbacks
-p AChildWithLambdaCallbacks.new.some_method
-p AChildWithLambdaCallbacks.callbacks
+p AChildWithBlockCallbacks
+p AChildWithBlockCallbacks.new.some_method
+p AChildWithBlockCallbacks.callbacks
 puts "---"
-p AChildWithImplicitlyDefinedMethodCallbacks
-p AChildWithImplicitlyDefinedMethodCallbacks.new.some_method
-p AChildWithImplicitlyDefinedMethodCallbacks.callbacks
-puts "---"
-p AChildWithExplicitlyDefinedMethodCallbacks
-p AChildWithExplicitlyDefinedMethodCallbacks.new.some_method
-p AChildWithExplicitlyDefinedMethodCallbacks.callbacks
+p AChildWithMethodCallbacks
+p AChildWithMethodCallbacks.new.some_method
+p AChildWithMethodCallbacks.callbacks
 puts "---"
 p AChildRedefinesChainedMethod
 p AChildRedefinesChainedMethod.new.some_method

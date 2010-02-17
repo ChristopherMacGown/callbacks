@@ -13,20 +13,23 @@ License:: MIT License
 
 == Usage
 
-  require 'callbacks'
+  I've made several examples[link:http://github.com/ChristopherMacGown/callbacks/tree/master/examples/], they're available in the repo. 
 
-  class SomeClass
-    include Callbacks
+  The most simple example is below:
 
-    def some_method
-      ... do something ...
+    require 'callbacks'
+
+    class SomeClass
+      include Callbacks
+
+      def some_method
+        ... do something ...
+      end
+
+      define_callback :before_some_method
+      before_some_method { ... do something else ... }
     end
 
-    define_callback :before_some_method
-    before_some_method { ... do something else ... }
-  end
+    SomeClass.new.some_method
+    => returns what some_method returns if before_some_method doesn't return nil or false
 
-  SomeClass.new.some_method
-  => returns what some_method returns if before_some_method doesn't return nil or false
-
-  Additionally, see the examples/

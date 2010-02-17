@@ -1,49 +1,35 @@
 require 'rubygems'
 require 'callbacks'
 
-class ALambdaCallback
+class ABlockCallback
   include Callbacks
 
   def some_method
     :some_method
   end
 
-  define_callback :before_some_method
-  before_some_method { p :before_some_method; true }
-end
-
-class ImplicitlyDefinedCallback 
-  include Callbacks
-
-  def some_method
-    :some_method
-  end
-
-  define_callback :before_some_method
-
-  def before_some_method
+  before :some_method do
     p :before_some_method
-    true
+    :before_some_method
   end
 end
 
-class ExplicitlyDefinedCallback
+class AMethodCallback
   include Callbacks
 
   def some_method
     :some_method
   end
 
-  def explicit_callback
-    p :before_some_method
-    true
+  def method_callback 
+    p :method_callback
+    :method_callback
   end
 
-  define_callback :before_some_method
-  before_some_method :explicit_callback
+
+  before :some_method, :method_callback
 end
 
-p ALambdaCallback.new.some_method
-p ImplicitlyDefinedCallback.new.some_method
-p ExplicitlyDefinedCallback.new.some_method
+p ABlockCallback.new.some_method
+p AMethodCallback.new.some_method
 

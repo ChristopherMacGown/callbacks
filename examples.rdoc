@@ -1,0 +1,15 @@
+==== Examples: 
+
+  # Implicitly defined before callback on some_method
+  def before_some_method(*args)
+    true
+  end
+
+  #Takes an optional list of methods and an optional block and adds each to the
+  #list of callbacks on some_methods's before callback chain
+  def self.before_some_method(*methods, &block)
+    (methods << block).compact.each do |m|
+      callbacks['some_method']['before'] << m
+    end
+  end
+
