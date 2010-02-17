@@ -83,7 +83,7 @@ module Callbacks
       #   end.flatten
       #
       #   unless before.include? nil or before.include? false
-      #     returning(args.empty? ? chained_some_method : chained_some_method(*args)) do |ret|
+      #     returning(chained_some_method(*args)) do |ret|
       #       if ret
       #         %w(after incoming).map do |a|
       #           callback "some_method", a, *args
