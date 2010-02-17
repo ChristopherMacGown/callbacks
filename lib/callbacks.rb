@@ -100,7 +100,7 @@ module Callbacks
           before = callback "#{method}".to_sym, :before, *args
 
           unless before.include? nil or before.include? false
-            returning(args.empty? ? chained_#{method} : chained_#{method}(*args)) do |ret|
+            returning(chained_#{method}(*args)) do |ret|
               callback "#{method}".to_sym, :after, *args if ret
             end
           end
