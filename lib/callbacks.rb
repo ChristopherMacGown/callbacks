@@ -78,17 +78,11 @@ module Callbacks
       # alias :chained_some_method :some_method
       #
       # def some_method(*args)
-      #   before = %w(before outgoing).map do |b| 
-      #      callback "some_method", b, *args
-      #   end.flatten
+      #   before = callback "some_method", :before, *args
       #
       #   unless before.include? nil or before.include? false
       #     returning(chained_some_method(*args)) do |ret|
-      #       if ret
-      #         %w(after incoming).map do |a|
-      #           callback "some_method", a, *args
-      #         end
-      #       end
+      #       callback "some_method", :after, *args if ret
       #     end
       #   end
       # end
