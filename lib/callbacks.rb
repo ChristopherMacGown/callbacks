@@ -34,16 +34,29 @@ module Callbacks
   end
 
   module ClassMethods
-    CALLBACK_TYPES = %w(before after outgoing incoming)
-
+    # Add a before callback to the a method
+    #
     def before(method, *callback_methods, &block)
       build_callback :before, method, *callback_methods, &block
     end
 
+    # Add an after callback to the a method
     def after(method, *callback_methods, &block)
       build_callback :after, method, *callback_methods, &block
     end
 
+    protected
+
+    # Creates a generic callback
+    #
+    # Raises CallbackError if the method does not exist
+    #
+    # Raises CallbackError if callback_methods is not empty AND block is not nil.
+    #
+    # Adds the callback_methods or block to the callback chain for method of the type 
+    # specified. This method calls #chain on the passed method if the chained_method is
+    # undefined
+    #
     def build_callback(type, method, *callback_methods, &block)
       raise CallbackError, "No such method" unless method_defined? method.to_sym
       raise CallbackError, "Cannot specify block and method callbacks together" unless callback_methods.empty? or block.nil?

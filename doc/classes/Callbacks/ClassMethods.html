@@ -80,9 +80,12 @@
       <h3 class="section-bar">Methods</h3>
 
       <div class="name-list">
-      <a href="#M000004">chain</a>&nbsp;&nbsp;
-      <a href="#M000003">define_callback</a>&nbsp;&nbsp;
-      <a href="#M000002">define_callbacks</a>&nbsp;&nbsp;
+      <a href="#M000003">after</a>&nbsp;&nbsp;
+      <a href="#M000002">before</a>&nbsp;&nbsp;
+      <a href="#M000004">build_callback</a>&nbsp;&nbsp;
+      <a href="#M000007">callbacks</a>&nbsp;&nbsp;
+      <a href="#M000005">chain</a>&nbsp;&nbsp;
+      <a href="#M000006">parent</a>&nbsp;&nbsp;
       </div>
     </div>
 
@@ -94,19 +97,6 @@
     <div id="section">
 
 
-    <div id="constants-list">
-      <h3 class="section-bar">Constants</h3>
-
-      <div class="name-list">
-        <table summary="Constants">
-        <tr class="top-aligned-row context-row">
-          <td class="context-item-name">CALLBACK_TYPES</td>
-          <td>=</td>
-          <td class="context-item-value">%w(before after outgoing incoming)</td>
-        </tr>
-        </table>
-      </div>
-    </div>
 
 
 
@@ -117,26 +107,178 @@
     <div id="methods">
       <h3 class="section-bar">Public Instance methods</h3>
 
+      <div id="method-M000003" class="method-detail">
+        <a name="M000003"></a>
+
+        <div class="method-heading">
+          <a href="#M000003" class="method-signature">
+          <span class="method-name">after</span><span class="method-args">(method, *callback_methods, &amp;block)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Add an <a href="ClassMethods.html#M000003">after</a> callback to the a
+method
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000003-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000003-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/callbacks.rb, line 44</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">after</span>(<span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">callback_methods</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+      <span class="ruby-identifier">build_callback</span> <span class="ruby-identifier">:after</span>, <span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">callback_methods</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000002" class="method-detail">
+        <a name="M000002"></a>
+
+        <div class="method-heading">
+          <a href="#M000002" class="method-signature">
+          <span class="method-name">before</span><span class="method-args">(method, *callback_methods, &amp;block)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Add a <a href="ClassMethods.html#M000002">before</a> callback to the a
+method
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000002-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000002-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/callbacks.rb, line 39</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">before</span>(<span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">callback_methods</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+      <span class="ruby-identifier">build_callback</span> <span class="ruby-identifier">:before</span>, <span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">callback_methods</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="section-bar">Protected Instance methods</h3>
+
       <div id="method-M000004" class="method-detail">
         <a name="M000004"></a>
 
         <div class="method-heading">
           <a href="#M000004" class="method-signature">
+          <span class="method-name">build_callback</span><span class="method-args">(type, method, *callback_methods, &amp;block)</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Creates a generic callback
+</p>
+<p>
+Raises <a href="CallbackError.html">CallbackError</a> if the method does
+not exist
+</p>
+<p>
+Raises <a href="CallbackError.html">CallbackError</a> if callback_methods
+is not empty AND block is not nil.
+</p>
+<p>
+Adds the callback_methods or block to the callback <a
+href="ClassMethods.html#M000005">chain</a> for method of the type
+specified. This method calls <a href="ClassMethods.html#M000005">chain</a>
+on the passed method if the chained_method is undefined
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000004-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000004-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/callbacks.rb, line 60</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">build_callback</span>(<span class="ruby-identifier">type</span>, <span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">callback_methods</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">CallbackError</span>, <span class="ruby-value str">&quot;No such method&quot;</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">method_defined?</span> <span class="ruby-identifier">method</span>.<span class="ruby-identifier">to_sym</span>
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">CallbackError</span>, <span class="ruby-value str">&quot;Cannot specify block and method callbacks together&quot;</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">callback_methods</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-keyword kw">or</span> <span class="ruby-identifier">block</span>.<span class="ruby-identifier">nil?</span>
+
+      <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">callbacks</span>[<span class="ruby-identifier">method</span>] <span class="ruby-operator">||=</span> <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>([])
+
+      <span class="ruby-comment cmt"># Setting a default automatically means ||= short-circuits and all callbacks</span>
+      <span class="ruby-comment cmt"># end up added to the default array instead. Makes for an interesting bug.</span>
+      <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">callbacks</span>[<span class="ruby-identifier">method</span>][<span class="ruby-identifier">type</span>] = [] <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">callbacks</span>[<span class="ruby-identifier">method</span>][<span class="ruby-identifier">type</span>].<span class="ruby-identifier">empty?</span>
+
+      (<span class="ruby-identifier">callback_methods</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">block</span>).<span class="ruby-identifier">compact</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">m</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">callbacks</span>[<span class="ruby-identifier">method</span>][<span class="ruby-identifier">type</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">m</span>
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-identifier">chain</span> <span class="ruby-identifier">method</span>.<span class="ruby-identifier">to_sym</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">method_defined?</span> <span class="ruby-node">&quot;chained_#{method}&quot;</span><span class="ruby-node">&quot;chained_#{method}&quot;</span>
+    <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000007" class="method-detail">
+        <a name="M000007"></a>
+
+        <div class="method-heading">
+          <a href="#M000007" class="method-signature">
+          <span class="method-name">callbacks</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+The included class&#8216;s <a
+href="ClassMethods.html#M000007">callbacks</a>
+</p>
+          <p><a class="source-toggle" href="#"
+            onclick="toggleCode('M000007-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000007-source">
+<pre>
+<span class="ruby-comment cmt"># File lib/callbacks.rb, line 124</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">callbacks</span>
+      <span class="ruby-identifier">deep_clone</span> = <span class="ruby-identifier">lambda</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">hash</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">hash</span>.<span class="ruby-identifier">inject</span>({}) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>, (<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)<span class="ruby-operator">|</span>
+          <span class="ruby-identifier">h</span>[<span class="ruby-identifier">key</span>] = <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">value</span>
+                   <span class="ruby-keyword kw">when</span> <span class="ruby-constant">Hash</span><span class="ruby-operator">:</span> <span class="ruby-identifier">deep_clone</span>.<span class="ruby-identifier">call</span>(<span class="ruby-identifier">value</span>)
+                   <span class="ruby-keyword kw">when</span> <span class="ruby-constant">Array</span><span class="ruby-operator">:</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">clone</span>
+                   <span class="ruby-keyword kw">end</span>
+          <span class="ruby-identifier">h</span>
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+
+      <span class="ruby-ivar">@@callbacks</span> <span class="ruby-operator">||=</span> {}
+      <span class="ruby-comment cmt"># inner callback Array is the same, Hash needs a deep clone</span>
+      <span class="ruby-ivar">@@callbacks</span>[<span class="ruby-keyword kw">self</span>] <span class="ruby-operator">||=</span> (<span class="ruby-ivar">@@callbacks</span>[<span class="ruby-identifier">parent</span>] <span class="ruby-operator">?</span> <span class="ruby-identifier">deep_clone</span>.<span class="ruby-identifier">call</span>(<span class="ruby-ivar">@@callbacks</span>[<span class="ruby-identifier">parent</span>]) <span class="ruby-operator">:</span> {})
+      <span class="ruby-ivar">@@callbacks</span>[<span class="ruby-keyword kw">self</span>]
+    <span class="ruby-keyword kw">end</span>
+</pre>
+          </div>
+        </div>
+      </div>
+
+      <div id="method-M000005" class="method-detail">
+        <a name="M000005"></a>
+
+        <div class="method-heading">
+          <a href="#M000005" class="method-signature">
           <span class="method-name">chain</span><span class="method-args">(method)</span>
           </a>
         </div>
       
         <div class="method-description">
           <p>
-Builds a chained method so the callbacks will fire. This method must be
-called after a method chained in a parent class is redefined in a subclass
-the callbacks should fire on the redefined method
+Builds a chained method so the <a
+href="ClassMethods.html#M000007">callbacks</a> will fire. This method must
+be called <a href="ClassMethods.html#M000003">after</a> a method chained in
+a <a href="ClassMethods.html#M000006">parent</a> class is redefined in a
+subclass the <a href="ClassMethods.html#M000007">callbacks</a> should fire
+on the redefined method
 </p>
           <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000004-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000004-source">
+            onclick="toggleCode('M000005-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000005-source">
 <pre>
-<span class="ruby-comment cmt"># File lib/callbacks.rb, line 112</span>
+<span class="ruby-comment cmt"># File lib/callbacks.rb, line 81</span>
     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">chain</span>(<span class="ruby-identifier">method</span>)
       <span class="ruby-identifier">before_types</span>, <span class="ruby-identifier">after_types</span>  = [<span class="ruby-node">%w(before outgoing)</span>, <span class="ruby-node">%w(after incoming)</span>]
 
@@ -158,126 +300,33 @@ the callbacks should fire on the redefined method
       <span class="ruby-comment cmt">#   end</span>
       <span class="ruby-comment cmt"># end</span>
       <span class="ruby-comment cmt">#           </span>
-      <span class="ruby-identifier">class_eval</span> <span class="ruby-value str">&quot;alias :\&quot;chained_\#{method}\&quot; :\&quot;\#{method}\&quot;\n\ndef \#{method}(*args)\nbefore = %w(before outgoing).map do |b|\ncallback \&quot;\#{method}\&quot;, b, *args\nend.flatten\n\nunless before.include? nil or before.include? false\nreturning(args.empty? ? chained_\#{method} : chained_\#{method}(*args)) do |ret|\nif ret\n%w(after incoming).map do |a|\ncallback \&quot;\#{method}\&quot;, a, *args\nend.flatten\nend\nend\nend\nend\n&quot;</span>
+      <span class="ruby-identifier">class_eval</span> <span class="ruby-value str">&quot;alias :\&quot;chained_\#{method}\&quot; :\&quot;\#{method}\&quot;\n\ndef \#{method}(*args)\nbefore = callback \&quot;\#{method}\&quot;.to_sym, :before, *args\n\nunless before.include? nil or before.include? false\nreturning(args.empty? ? chained_\#{method} : chained_\#{method}(*args)) do |ret|\ncallback \&quot;\#{method}\&quot;.to_sym, :after, *args if ret\nend\nend\nend\n&quot;</span>
     <span class="ruby-keyword kw">end</span>
 </pre>
           </div>
         </div>
       </div>
 
-      <div id="method-M000003" class="method-detail">
-        <a name="M000003"></a>
+      <div id="method-M000006" class="method-detail">
+        <a name="M000006"></a>
 
         <div class="method-heading">
-          <span class="method-name">define_callback</span><span class="method-args">(*callbacks)</span>
-        </div>
-      
-        <div class="method-description">
-          <p>
-Alias for <a href="ClassMethods.html#M000002">define_callbacks</a>
-</p>
-        </div>
-      </div>
-
-      <div id="method-M000002" class="method-detail">
-        <a name="M000002"></a>
-
-        <div class="method-heading">
-          <a href="#M000002" class="method-signature">
-          <span class="method-name">define_callbacks</span><span class="method-args">(*callbacks)</span>
+          <a href="#M000006" class="method-signature">
+          <span class="method-name">parent</span><span class="method-args">()</span>
           </a>
         </div>
       
         <div class="method-description">
           <p>
-Defines one or more callback chains on a method. If the method does not
-exist or the callback type (before, outgoing, after, incoming) is invalid
-will raise <a href="CallbackError.html">CallbackError</a>. This method
-implicitly defines a method of the same name as the callback <a
-href="ClassMethods.html#M000004">chain</a> which is then added to the list
-of callbacks on the method.
+The included class&#8216;s <a href="ClassMethods.html#M000006">parent</a>
 </p>
-<h4>Examples of valid callbacks:</h4>
-<table>
-<tr><td valign="top"><tt>before_method_name</tt>:</td><td>An example callback list called before the method.
-
-</td></tr>
-<tr><td valign="top"><tt>outgoing_method_name</tt>:</td><td>An example callback list before the method.
-
-</td></tr>
-<tr><td valign="top"><tt>after_method_name</tt>:</td><td>An example callback list called after the method.
-
-</td></tr>
-<tr><td valign="top"><tt>incoming_method_name</tt>:</td><td>An example callback list called after the method.
-
-</td></tr>
-</table>
-<h4>Execution Order:</h4>
-<p>
-When a chained method is called, the callbacks fire in the following order:
-</p>
-<ol>
-<li>before_ callbacks
-
-</li>
-<li>outgoing_ callbacks
-
-</li>
-<li>after_ callbacks
-
-</li>
-<li>incoming_ callbacks
-
-</li>
-</ol>
-<h4>Examples:</h4>
-<pre>
-  # Implicitly defined before callback on some_method
-  def before_some_method(*args)
-    true
-  end
-
-  #Takes an optional list of methods and an optional block and adds each to the
-  #list of callbacks on some_methods's before callback chain
-  def self.before_some_method(*methods, &amp;block)
-    (methods &lt;&lt; block).compact.each do |m|
-      callbacks['some_method']['before'] &lt;&lt; m
-    end
-  end
-</pre>
           <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000002-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000002-source">
+            onclick="toggleCode('M000006-source');return false;">[Source]</a></p>
+          <div class="method-source-code" id="M000006-source">
 <pre>
-<span class="ruby-comment cmt"># File lib/callbacks.rb, line 62</span>
-    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">define_callbacks</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">callbacks</span>)
-      <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">callback</span><span class="ruby-operator">|</span>
-        <span class="ruby-identifier">callback</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-operator">=~</span> <span class="ruby-node">/(#{CALLBACK_TYPES.join(&quot;|&quot;)})_(.*?)/</span>
-        <span class="ruby-identifier">type</span>, <span class="ruby-identifier">method</span> = [<span class="ruby-identifier">$1</span>, <span class="ruby-identifier">$'</span>]
-
-        <span class="ruby-identifier">raise</span> <span class="ruby-constant">CallbackError</span>, <span class="ruby-value str">&quot;Invalid Callback Type&quot;</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-constant">CALLBACK_TYPES</span>.<span class="ruby-identifier">include?</span> <span class="ruby-identifier">type</span>
-        <span class="ruby-identifier">raise</span> <span class="ruby-constant">CallbackError</span>, <span class="ruby-value str">&quot;No such method&quot;</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">method_defined?</span> <span class="ruby-identifier">method</span>.<span class="ruby-identifier">to_sym</span>
-
-        <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">callbacks</span>[<span class="ruby-identifier">method</span>] <span class="ruby-operator">||=</span> <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>([])
-
-        <span class="ruby-comment cmt"># Setting a default automatically means ||= short-circuits and all callbacks</span>
-        <span class="ruby-comment cmt"># end up added to the default array instead. Makes for an interesting bug.</span>
-        <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">callbacks</span>[<span class="ruby-identifier">method</span>][<span class="ruby-identifier">type</span>] = [] <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">callbacks</span>[<span class="ruby-identifier">method</span>][<span class="ruby-identifier">type</span>].<span class="ruby-identifier">empty?</span>
-        <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">callbacks</span>[<span class="ruby-identifier">method</span>][<span class="ruby-identifier">type</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">callback</span>.<span class="ruby-identifier">to_sym</span>
-
-        <span class="ruby-comment cmt"># def before_some_method(*args)</span>
-        <span class="ruby-comment cmt">#   true</span>
-        <span class="ruby-comment cmt"># end</span>
-        <span class="ruby-comment cmt">#</span>
-        <span class="ruby-comment cmt"># def self.before_some_method(*methods, &amp;block)</span>
-        <span class="ruby-comment cmt">#   (methods &lt;&lt; block).compact.each do |m|</span>
-        <span class="ruby-comment cmt">#     callbacks['some_method']['before'] &lt;&lt; m</span>
-        <span class="ruby-comment cmt">#   end</span>
-        <span class="ruby-comment cmt"># end</span>
-        <span class="ruby-identifier">class_eval</span> <span class="ruby-value str">&quot;\n# implicitly define the default callback for the chain\ndef \#{callback}(*args)\ntrue\nend\n\n# Add a callback to the chain\ndef self.\#{callback}(*methods, &amp;block)\n(methods &lt;&lt; block).compact.each do |m|\ncallbacks[\&quot;\#{method}\&quot;][\&quot;\#{type}\&quot;] &lt;&lt; m\nend\nend\n&quot;</span>
-
-        <span class="ruby-identifier">chain</span> <span class="ruby-identifier">method</span>.<span class="ruby-identifier">to_sym</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">method_defined?</span> <span class="ruby-node">&quot;chained_#{method}&quot;</span><span class="ruby-node">&quot;chained_#{method}&quot;</span>
-      <span class="ruby-keyword kw">end</span>
+<span class="ruby-comment cmt"># File lib/callbacks.rb, line 119</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">parent</span>
+      (<span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">ancestors</span>[<span class="ruby-value">0</span>, <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">ancestors</span>.<span class="ruby-identifier">index</span>(<span class="ruby-constant">Callbacks</span>)] <span class="ruby-operator">-</span> [<span class="ruby-keyword kw">self</span>]).<span class="ruby-identifier">first</span>
     <span class="ruby-keyword kw">end</span>
 </pre>
           </div>
